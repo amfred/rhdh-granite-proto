@@ -1,0 +1,11 @@
+# invoke this by running: pip install -r requirements.txt
+
+# Needed for the IBM Granite examples https://huggingface.co/ibm-granite/granite-3.0-8b-instruct
+torch
+torchvision
+torchaudio
+accelerate
+transformers
+
+# Needed for the MCP Python SDK https://github.com/modelcontextprotocol/python-sdk
+mcp
