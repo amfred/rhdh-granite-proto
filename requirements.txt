@@ -9,3 +9,6 @@ transformers
 
 # Needed for the MCP Python SDK https://github.com/modelcontextprotocol/python-sdk
 mcp
+
+# Needed to use ollama as the inference server
+ollama

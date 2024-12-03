@@ -13,12 +13,18 @@ After switching to the recommended version of Python, upgrade pip:
 pip install --upgrade pip
 ```
 
-Use the provided requirements.txt file to install the required libraries:
+Use the provided requirements.txt file to install the required libraries, including Pytorch and MCP:
 ```
 pip install -r requirements.txt
 ```
 
+Start up Granite in the local ollama server:
+```
+ollama pull granite3-dense:8b
+ollama serve
+```
+
 Run the granite-example script to download and test the Granite model:
 ```
-python granite-example-1.py
+python granite-from-ollama.py
 ```
