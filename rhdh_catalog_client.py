@@ -8,7 +8,7 @@ logger = logging.getLogger("client")
 # Create server parameters for stdio connection
 server_params = StdioServerParameters(
     command="python", # Executable
-    args=["mcp_website_fetcher_server.py"], # Optional command line arguments
+    args=["rhdh_catalog_server.py"], # Optional command line arguments
     env=None # Optional environment variables
 )
 
@@ -40,9 +40,13 @@ async def run():
             #resource = await session.read_resource("file://some/path")
             #logger.info("Resource: ", resource)
 
-            # Call a tool
+            # Call the fetch tool
             result = await session.call_tool("fetch", arguments={"url": "https://example.com"})
             logger.info(f"First few characters from fetching URL: \n{result.content[0].text[:66]}")
+
+            # Call the fetch tool
+            result = await session.call_tool("get_from_rhdh_catalog", arguments={"url": "https://example.com"})
+            logger.info(f"First few characters from RHDH API: \n{result.content[0].text[:66]}")
 
 if __name__ == "__main__":
     import asyncio
