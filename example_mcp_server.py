@@ -1,3 +1,8 @@
+# /// script
+# dependencies = [
+#   "mcp"
+# ]
+# ///
 from mcp.server import Server, NotificationOptions
 from mcp.server.models import InitializationOptions
 import mcp.server.stdio
@@ -43,6 +48,7 @@ async def handle_get_prompt(
             )
         ]
     )
+
 
 async def run():
     # Run the server as STDIO

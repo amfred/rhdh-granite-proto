@@ -1,4 +1,5 @@
 import torch
+import timeit
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 device = "auto"
@@ -28,10 +29,11 @@ chat = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt
 input_tokens = tokenizer(chat, return_tensors="pt").to(device)
 print("Generated input tokens")
 
+start = timeit.default_timer()
 # generate output tokens
 output = model.generate(**input_tokens, 
                         max_new_tokens=100)
-print("Generated output tokens")
+print("The inference execution time is: ", timeit.default_timer() - start)
 
 # decode output tokens into text
 output = tokenizer.batch_decode(output)

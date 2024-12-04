@@ -3,6 +3,9 @@
 # ollama serve
 
 import ollama
+import timeit
+
+start = timeit.default_timer()
 response = ollama.chat(model='llama2', messages=[
   {
     'role': 'user',
@@ -10,3 +13,4 @@ response = ollama.chat(model='llama2', messages=[
   },
 ])
 print(response['message']['content'])
+print("The inference execution time is: ", timeit.default_timer() - start)

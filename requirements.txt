@@ -10,5 +10,10 @@ transformers
 # Needed for the MCP Python SDK https://github.com/modelcontextprotocol/python-sdk
 mcp
 
+# For the web page loading tool
+anyio
+click
+httpx
+
 # Needed to use ollama as the inference server
 ollama
