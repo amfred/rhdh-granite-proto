@@ -86,6 +86,9 @@ def main(port: int, transport: str) -> int:
         elif name == "get_apis":
             path = BASE_URI + QUERY_URI + "?filter=kind=api&fields=kind,metadata.namespace,metadata.name,metadata.title,metadata.description,metadata.tags,metadata.links";
             return await get_from_rhdh_catalog(arguments["url"], path, arguments["apiKey"])
+        elif name == "get_inference_servers":
+            path = BASE_URI + QUERY_URI + "?filter=kind=component,spec.type=model-server&fields=kind,metadata.namespace,metadata.name,metadata.title,metadata.description,metadata.tags,metadata.links";
+            return await get_from_rhdh_catalog(arguments["url"], path, arguments["apiKey"])
         else:
             raise ValueError(f'Unknown tool: {name}')
 
@@ -127,6 +130,24 @@ def main(port: int, transport: str) -> int:
             types.Tool(
                 name="get_apis",
                 description="Gets a list of APIs registered in Developer Hub",
+                inputSchema={
+                    "type": "object",
+                    "required": ["url","apiKey"],
+                    "properties": {
+                        "url": {
+                            "type": "string",
+                            "description": "URL to fetch",
+                        },
+                        "apiKey": {
+                            "type": "string",
+                            "description": "API key to use in the Authorization: Bearer header",
+                        }
+                    },
+                },
+            ),
+            types.Tool(
+                name="get_inference_servers",
+                description="Gets a list of model inference servers registered in Developer Hub",
                 inputSchema={
                     "type": "object",
                     "required": ["url","apiKey"],

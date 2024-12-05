@@ -53,18 +53,25 @@ async def run():
             url = os.environ.get('RHDH_API_URL')
             apiKey = os.environ.get('RHDH_API_KEY')
 
-            # Call the Developer Hub APIs
+            # Call the Developer Hub APIs in various ways
+            # Represent each of these as a separate tool
             result = await session.call_tool("get_tags", arguments={
                 "url": url,
                 "apiKey": apiKey,
                 })
-            logger.info(f"Tag List from RHDH API: \n{result.content[0].text}")
+            logger.info(f"Tag list from RHDH API: \n{result.content[0].text}")
 
             result = await session.call_tool("get_apis", arguments={
                 "url": os.environ.get('RHDH_API_URL', None),
                 "apiKey": os.environ.get('RHDH_API_KEY', None),
                 })
-            logger.info(f"API List from RHDH API: \n{result.content[0].text}")
+            logger.info(f"API list from RHDH API: \n{result.content[0].text}")
+
+            result = await session.call_tool("get_inference_servers", arguments={
+                "url": os.environ.get('RHDH_API_URL', None),
+                "apiKey": os.environ.get('RHDH_API_KEY', None),
+                })
+            logger.info(f"Inference server list from RHDH API: \n{result.content[0].text}")
 
 if __name__ == "__main__":
     import asyncio
