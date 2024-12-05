@@ -6,9 +6,19 @@ import mcp.types as types
 from mcp.server import Server
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("server")
+logger = logging.getLogger("rhdh-catalog-server")
 
-# This is a silly tool whose purpose is to make sure HTTP in general is working
+BASE_URI            = "/api/catalog"
+LOCATION_URI        = "/locations"
+ENTITIES_URI        = "/entities"
+COMPONENT_URI       = "/entities/by-name/component/%s/%s"
+RESOURCE_URI        = "/entities/by-name/resource/%s/%s"
+API_URI             = "/entities/by-name/api/default/ollama-service-api"
+QUERY_URI           = "/entities/by-query"
+ENTITY_FACETS_URI   = "/entity-facets"
+DEFAULT_NS          = "default"
+
+# This is a method whose purpose is to make sure HTTP in general is working
 async def fetch_website(
     url: str,
 ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
@@ -20,7 +30,8 @@ async def fetch_website(
         response.raise_for_status()
         return [types.TextContent(type="text", text=response.text)]
 
-async def get_from_rhdh_catalog(
+# This is a utility method to call Backstage Software Catalog APIs
+async def get_from_backstage_catalog(
     url: str, path: str, apiKey: str
 ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
     headers = {
@@ -37,16 +48,6 @@ async def get_from_rhdh_catalog(
 @click.group()
 def cli():
     pass
-
-BASE_URI            = "/api/catalog"
-LOCATION_URI        = "/locations"
-ENTITIES_URI        = "/entities"
-COMPONENT_URI       = "/entities/by-name/component/%s/%s"
-RESOURCE_URI        = "/entities/by-name/resource/%s/%s"
-API_URI             = "/entities/by-name/api/default/ollama-service-api"
-QUERY_URI           = "/entities/by-query"
-ENTITY_FACETS_URI   = "/entity-facets"
-DEFAULT_NS          = "default"
 
 @cli.command()
 @click.option("--port", default=8000, help="Port to listen on for SSE")
@@ -82,13 +83,13 @@ def main(port: int, transport: str) -> int:
 
         elif name == "get_tags":
             path = BASE_URI + ENTITY_FACETS_URI + "?facet=metadata.tags&filter=kind%3Dresource"
-            return await get_from_rhdh_catalog(arguments["url"], path, arguments["apiKey"])
+            return await get_from_backstage_catalog(arguments["url"], path, arguments["apiKey"])
         elif name == "get_apis":
             path = BASE_URI + QUERY_URI + "?filter=kind=api&fields=kind,metadata.namespace,metadata.name,metadata.title,metadata.description,metadata.tags,metadata.links";
-            return await get_from_rhdh_catalog(arguments["url"], path, arguments["apiKey"])
+            return await get_from_backstage_catalog(arguments["url"], path, arguments["apiKey"])
         elif name == "get_inference_servers":
             path = BASE_URI + QUERY_URI + "?filter=kind=component,spec.type=model-server&fields=kind,metadata.namespace,metadata.name,metadata.title,metadata.description,metadata.tags,metadata.links";
-            return await get_from_rhdh_catalog(arguments["url"], path, arguments["apiKey"])
+            return await get_from_backstage_catalog(arguments["url"], path, arguments["apiKey"])
         else:
             raise ValueError(f'Unknown tool: {name}')
 

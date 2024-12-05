@@ -4,7 +4,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("client")
+logger = logging.getLogger("rhdh-catalog-client")
 
 # Create server parameters for stdio connection
 server_params = StdioServerParameters(

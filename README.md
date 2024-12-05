@@ -28,3 +28,72 @@ Run the granite-example script to download and test the Granite model:
 ```
 python granite-from-ollama.py
 ```
+
+Run the test client with a local server:
+```
+export RHDH_API_KEY = <Bearer token for Developer Hub's catalog APIs. Read only is sufficient.>
+export RHDH_API_URL = <URL for the MCP server hosting the catalog API, example http://0.0.0.0:8000 for localhost>
+export GRANITE_API_KEY = <API key for the model inference server hosting granite3-dense:8b also known as granite-3.0-8b-instruct >
+export GRANITE_API_URL = <URL for an Open AI API compatible server hosting the granite3-dense:8b model, example https://ibm-granite-3.0-8b-instruct-vllm.apps.your-openshift-ai-cluster.com>
+
+python rhdh_catalog_client.py
+```
+
+Run the server in SSE mode:
+```
+python rhdh_catalog_server.py --port 8000 --transport sse
+
+INFO:server:Starting up rhdh-api server using transport: sse
+INFO:server:Starting up sse server on port: 8000
+INFO:     Started server process [16234]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+```
+
+Useful curl commands for testing the models directly using the Open AI API:
+
+This works for a VLLM server hosting ibm-granite-8b-code-instruct:
+```
+curl -X POST \
+  "$GRANITE_API_URL/v1/chat/completions" \                
+  -H "Authorization: Bearer $GRANITE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "ibm-granite-8b-code-instruct",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant."
+      },
+      {
+        "role": "user",
+        "content": "What is the plot of the movie Inception?"
+      }
+    ]
+  }' \
+  -k
+```
+
+This works for an Ollama server hosting granite3-dense:8b also known as granite-3.0-8b-instruct:
+```
+  curl -X POST \      
+  "$GRANITE_API_URL/v1/chat/completions" \
+  -H "Authorization: Bearer $GRANITE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "granite3-dense:8b",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant."
+      },
+      {
+        "role": "user",
+        "content": "What is the plot of the movie Inception?"
+      }
+    ]
+  }' \
+  -k
+
+```
