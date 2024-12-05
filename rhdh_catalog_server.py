@@ -15,21 +15,22 @@ async def fetch_website(
     headers = {
         "User-Agent": "MCP Test Server (github.com/modelcontextprotocol/python-sdk)"
     }
-    logger.info(f"Tool called. Fetching URL: {url}")
     async with httpx.AsyncClient(follow_redirects=True, headers=headers) as client:
         response = await client.get(url)
         response.raise_for_status()
         return [types.TextContent(type="text", text=response.text)]
 
 async def get_from_rhdh_catalog(
-    url: str,
+    url: str, path: str, apiKey: str
 ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
     headers = {
-        "User-Agent": "MCP Test Server (github.com/modelcontextprotocol/python-sdk)"
+        "User-Agent": "MCP Test Server (github.com/modelcontextprotocol/python-sdk)",
+        "Authorization": f"Bearer {apiKey}"
     }
-    logger.info(f"Tool called. Calling API: {url}")
+    fullPath = url + path
+    #logger.info(f"The fullPath is: {fullPath}")
     async with httpx.AsyncClient(follow_redirects=True, headers=headers) as client:
-        response = await client.get(url)
+        response = await client.get(fullPath)
         response.raise_for_status()
         return [types.TextContent(type="text", text=response.text)]
     
@@ -37,6 +38,15 @@ async def get_from_rhdh_catalog(
 def cli():
     pass
 
+BASE_URI            = "/api/catalog"
+LOCATION_URI        = "/locations"
+ENTITIES_URI        = "/entities"
+COMPONENT_URI       = "/entities/by-name/component/%s/%s"
+RESOURCE_URI        = "/entities/by-name/resource/%s/%s"
+API_URI             = "/entities/by-name/api/default/ollama-service-api"
+QUERY_URI           = "/entities/by-query"
+ENTITY_FACETS_URI   = "/entity-facets"
+DEFAULT_NS          = "default"
 
 @cli.command()
 @click.option("--port", default=8000, help="Port to listen on for SSE")
@@ -54,15 +64,28 @@ def main(port: int, transport: str) -> int:
     async def call_tool(
         name: str, arguments: dict
     ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        
+        # All of the tools require the url
+        if "url" not in arguments:
+            raise ValueError("Missing required argument 'url'")
+        elif (arguments["url"] == None or arguments["url"] == ""):
+            raise ValueError("Required argument 'url' must not be blank")
 
         if name == "fetch":
-            if "url" not in arguments:
-                raise ValueError("Missing required argument 'url'")
             return await fetch_website(arguments["url"])
-        elif name == "get_from_rhdh_catalog":
-            if "url" not in arguments:
-                raise ValueError("Missing required argument 'url'")
-            return await get_from_rhdh_catalog(arguments["url"])
+        
+        # The remaining tools also require the apiKey
+        if "apiKey" not in arguments:
+            raise ValueError("Missing required argument 'apiKey'")
+        elif (arguments["apiKey"] == None or arguments["apiKey"] == ""):
+            raise ValueError("Required argument 'apiKey' must not be blank")
+
+        elif name == "get_tags":
+            path = BASE_URI + ENTITY_FACETS_URI + "?facet=metadata.tags&filter=kind%3Dresource"
+            return await get_from_rhdh_catalog(arguments["url"], path, arguments["apiKey"])
+        elif name == "get_apis":
+            path = BASE_URI + QUERY_URI + "?filter=kind=api&fields=kind,metadata.namespace,metadata.name,metadata.title,metadata.description,metadata.tags,metadata.links";
+            return await get_from_rhdh_catalog(arguments["url"], path, arguments["apiKey"])
         else:
             raise ValueError(f'Unknown tool: {name}')
 
@@ -71,7 +94,7 @@ def main(port: int, transport: str) -> int:
         return [
             types.Tool(
                 name="fetch",
-                description="Fetches a website and returns its content",
+                description="Fetches a webpage and returns its content",
                 inputSchema={
                     "type": "object",
                     "required": ["url"],
@@ -84,15 +107,37 @@ def main(port: int, transport: str) -> int:
                 },
             ),
             types.Tool(
-                name="get_from_rhdh_catalog",
-                description="Makes a GET API call to Developer Hub and returns its content",
+                name="get_tags",
+                description="Gets metadata about the tags in Developer Hub: the name of each tag (value), and the number of times each tag is used (count).",
                 inputSchema={
                     "type": "object",
-                    "required": ["url"],
+                    "required": ["url","apiKey"],
                     "properties": {
                         "url": {
                             "type": "string",
                             "description": "URL to fetch",
+                        },
+                        "apiKey": {
+                            "type": "string",
+                            "description": "API key to use in the Authorization: Bearer header",
+                        }
+                    },
+                },
+            ),
+            types.Tool(
+                name="get_apis",
+                description="Gets a list of APIs registered in Developer Hub",
+                inputSchema={
+                    "type": "object",
+                    "required": ["url","apiKey"],
+                    "properties": {
+                        "url": {
+                            "type": "string",
+                            "description": "URL to fetch",
+                        },
+                        "apiKey": {
+                            "type": "string",
+                            "description": "API key to use in the Authorization: Bearer header",
                         }
                     },
                 },

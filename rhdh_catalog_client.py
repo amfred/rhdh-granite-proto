@@ -1,4 +1,5 @@
 import logging
+import os
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
@@ -9,7 +10,7 @@ logger = logging.getLogger("client")
 server_params = StdioServerParameters(
     command="python", # Executable
     args=["rhdh_catalog_server.py"], # Optional command line arguments
-    env=None # Optional environment variables
+    env=None
 )
 
 async def run():
@@ -42,11 +43,28 @@ async def run():
 
             # Call the fetch tool
             result = await session.call_tool("fetch", arguments={"url": "https://example.com"})
-            logger.info(f"First few characters from fetching URL: \n{result.content[0].text[:66]}")
+            logger.info(f"First few characters from website: \n{result.content[0].text[:66]}")
 
-            # Call the fetch tool
-            result = await session.call_tool("get_from_rhdh_catalog", arguments={"url": "https://example.com"})
-            logger.info(f"First few characters from RHDH API: \n{result.content[0].text[:66]}")
+            if "RHDH_API_URL" not in os.environ:
+                raise ValueError("Missing required environment variable 'RHDH_API_URL'")
+            elif "RHDH_API_KEY" not in os.environ:
+                raise ValueError("Missing required environment variable 'RHDH_API_KEY'")
+            
+            url = os.environ.get('RHDH_API_URL')
+            apiKey = os.environ.get('RHDH_API_KEY')
+
+            # Call the Developer Hub APIs
+            result = await session.call_tool("get_tags", arguments={
+                "url": url,
+                "apiKey": apiKey,
+                })
+            logger.info(f"Tag List from RHDH API: \n{result.content[0].text}")
+
+            result = await session.call_tool("get_apis", arguments={
+                "url": os.environ.get('RHDH_API_URL', None),
+                "apiKey": os.environ.get('RHDH_API_KEY', None),
+                })
+            logger.info(f"API List from RHDH API: \n{result.content[0].text}")
 
 if __name__ == "__main__":
     import asyncio
