@@ -1,5 +1,12 @@
 # Prototype of Granite and MCP integration with Red Hat Developer Hub
 
+> [!WARNING]
+> **Archived prototype: do not use this code with production credentials.**
+>
+> This repository is no longer maintained. No API key values are committed, but `granite3_model_server.py` disables TLS certificate verification when sending `GRANITE_API_KEY`, and the README examples use `curl -k`. These settings can expose bearer credentials to network interception.
+>
+> Before adapting this prototype, restore TLS certificate verification, remove `-k`, and use a trusted certificate chain. Rotate any key previously used with this prototype over an untrusted network.
+
 Python script demonstrating use of the [Model Context Protocol](https://modelcontextprotocol.io) (MCP), providing both client and server capabilities for integrating with [Red Hat Developer Hub](https://developers.redhat.com/rhdh/overview) and the [IBM Granite-3.0-8b-Instruct model](https://huggingface.co/ibm-granite/granite-3.0-8b-instruct).
 
 ## Overview
